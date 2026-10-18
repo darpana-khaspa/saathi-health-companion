@@ -1,0 +1,96 @@
+
+ANTIGRAVITY MASTER BUILD PROMPT — H5 FRONTLINE HEALTH-WORKER COMPANION
+
+Act as a senior full-stack engineer, product designer, applied AI engineer, and QA engineer. Build a complete, runnable, professional MVP for this hackathon challenge. Do not stop at a plan or mockup: inspect the workspace, create the files, install/configure dependencies, run tests, fix errors, and provide the final run/deployment instructions.
+
+PRODUCT
+Name: Saathi Health Companion
+Purpose: An offline-first, low-connectivity assistant for trained ASHA/ANM frontline health workers. It answers questions only from supplied official public-health protocol documents, cites the exact protocol section for every answer, detects danger signs using a hard-coded rules layer before any model response, and helps prioritise household follow-up visits.
+
+NON-NEGOTIABLE SAFETY RULES
+1. This is a decision-support demo, not a doctor and not a replacement for official clinical guidance.
+2. Never invent clinical thresholds, diagnoses, treatment, or medication dosages. Never answer antibiotic-dose requests; clearly redirect to a qualified clinician / approved pathway.
+3. Build deterministic, hard-coded danger-sign rules that run BEFORE retrieval or model generation. Include a configurable rule list and tests. At minimum, match clear terms/phrases for bleeding during pregnancy and serious newborn danger signs, and provide a visible urgent-referral message. Do not rely on an LLM to detect these.
+4. Add an evaluation script/test suite that verifies 100% detection of the supplied must-escalate test set. If any required case fails, tests must fail.
+5. If a question is outside the supplied protocol corpus, say so, do not guess, and redirect to the official protocol or a clinician.
+6. Every normal answer must cite source document name and section/page/chunk. If no reliable source is retrieved, refuse to answer substantively.
+7. Display a clear disclaimer and an obvious escalation state. Do not claim the prototype is clinically validated.
+8. Use synthetic data only. Do not collect real patient-identifiable information in the demo.
+
+DELIVERABLES
+- A clean, responsive frontend and a working backend, not a static landing page.
+- Offline-capable protocol search and Q&A using local documents/index; core flow must still work with no internet after setup.
+- A deterministic escalation layer, citation-grounded retrieval, household visit list, sample data, automated tests, README, and deployment instructions.
+- Actually run the app and tests. Never fabricate test results, metrics, URLs, or a successful deployment.
+
+TECH STACK (choose a practical stack and keep it simple)
+Use Python + FastAPI backend. Use a lightweight React + Vite + TypeScript frontend if the workspace supports it; otherwise use the simplest robust frontend compatible with the existing project. Use SQLite for the synthetic household register and local persistence. Use a lightweight local retrieval approach (TF-IDF/BM25 or small local embeddings) that does not require a cloud API. Keep the architecture modular so a small local language model can be added, but do not make the MVP depend on a huge model or GPU. If a local model is available, make it optional and configurable; never silently fall back to an external API. Provide an extractive/template answer fallback that quotes only retrieved approved protocol text.
+
+INPUT FILES
+Look for these files in the workspace:
+- sample_household_register.csv
+- sample_protocol_knowledge_base.csv
+- sample_evaluation_questions.csv
+If they are not present, create equivalent synthetic starter files. Treat the protocol CSV as DEMO CONTENT ONLY, not as authoritative medical guidance. Add a clear README instruction showing where the hackathon's official supplied protocol documents must be placed and indexed before any real-world use. Do not present the synthetic sample guidance as official clinical advice.
+
+CORE USER FLOWS
+A. Ask a question:
+- One prominent question box, language selector (English and Telugu UI labels are enough for MVP; do not claim multilingual answer quality unless implemented), Ask button, and clear loading/error states.
+- Backend first runs danger-sign rules. If triggered, show a high-visibility emergency escalation panel before any model/retrieval answer.
+- Otherwise retrieve the best matching protocol passages locally and return a concise answer plus citation(s), source confidence/relevance indication, and a “not enough evidence” refusal when appropriate.
+- Provide a “Why this answer?” expandable area showing retrieved protocol excerpts and match details.
+- Include a few example question chips sourced from the synthetic evaluation set.
+B. Offline readiness:
+- Show Online/Offline status based on actual browser/network state, plus “Local protocol pack ready” status based on whether local data/index is available.
+- Cache the app shell and required static assets with a service worker/PWA setup. Do not imply a hosted website or cloud API works with no signal; explain that the app must be opened/installed and protocol data downloaded beforehand.
+- Keep the question-answer and household-list flows local. Do not require login, cloud keys, or external APIs.
+C. Household visit list:
+- Load the provided synthetic CSV into SQLite on first run, safely handling repeat imports.
+- List upcoming/overdue visits, with filters for village, assigned worker, category, and due status.
+- Sort overdue and nearest due dates first. Show only useful fields: beneficiary, village, category, next visit due, assigned worker, and concise visit note.
+- Add a simple visit-completed action that updates local status and persists in SQLite. Clearly label all data as synthetic demo data.
+D. Lightweight dashboard:
+- Minimal summary cards: overdue visits, due soon, total registered households, and local protocol pack status.
+- No unnecessary charts, gamification, chat history pages, login, admin panels, or decorative features.
+E. Backend API:
+- GET /api/health
+- GET /api/protocols/status
+- POST /api/ask
+- GET /api/visits
+- PATCH /api/visits/{household_id}/complete
+- Provide sensible validation, safe errors, CORS only for the local frontend origin, and API docs through FastAPI OpenAPI.
+F. Quality:
+- Unit tests for escalation rules, out-of-scope refusal, citation presence, CSV import, visit prioritisation, and API endpoints.
+- Evaluation script reads sample_evaluation_questions.csv and reports detection accuracy for must_escalate cases. Target 100% on the supplied test set; fail the test if below 100%.
+- Measure and document backend startup time, approximate model/index/data footprint, and CPU response time for a small representative question set. If no language model is actually used, say so honestly and report retrieval/response time instead of inventing model metrics.
+- Add clear setup steps for Windows and macOS/Linux, a single-command local development start if feasible, and a troubleshooting section.
+- Add a Dockerfile/docker-compose only if it makes deployment simpler, not just for show.
+
+DESIGN DIRECTION
+Professional, calm, clean, and user-friendly. The interface should feel like a credible healthcare field tool, not a flashy hackathon dashboard.
+- Mobile-first because the target device is a low-end Android phone.
+- Simple light background, restrained deep teal/navy accents, generous whitespace, accessible contrast, readable typography, large tap targets.
+- Sidebar/navigation should be minimal; use at most two main tabs: “Ask Protocols” and “Visit List”. Put a compact status strip for Offline/Online and local protocol readiness.
+- One primary action per screen. Clear hierarchy, consistent spacing, subtle borders, minimal shadows.
+- Avoid overcrowding, gradients everywhere, neon colours, excessive cards, animations, charts, decorative illustrations, fake statistics, and placeholder buttons.
+- Include loading, empty, error, offline, refusal, and escalation states.
+- Make it responsive and accessible, including keyboard navigation and labels.
+
+DEPLOYMENT
+- First make the app run locally and pass tests.
+- Then inspect which deployment targets and credentials are actually available in this environment. If deployment can be completed with available tooling and permission, deploy both frontend and backend and verify the public URL with a health check.
+- Do not expose secrets or commit environment files. Use environment variables for configuration.
+- If credentials, network access, or approval are missing, do NOT invent a deployment link or claim deployment succeeded. Instead, provide the exact minimal steps to deploy the frontend and backend to a suitable host, explain any offline/PWA limitations, and clearly mark the URL as “not deployed yet”.
+- Make sure the frontend API base URL is configurable for local and deployed environments. A frontend-only static deployment is not sufficient because this project requires a backend.
+
+IMPLEMENTATION PLAN
+1. Inspect the workspace and preserve useful existing code.
+2. Create a short architecture and file plan, then immediately implement it.
+3. Create/import the sample CSV files, backend, frontend, retrieval/indexing, escalation rules, and persistence.
+4. Run lint/build/tests and the escalation evaluation; fix issues rather than merely reporting them.
+5. Start the app and verify the key user flows with available tools.
+6. Write README with architecture, setup, tests, limitations, data provenance, security/safety notes, and deployment instructions.
+7. Finish with a concise report: implemented features, exact commands to run, tests actually executed and their results, performance measurements actually observed, and the verified deployment URL if one truly exists.
+
+IMPORTANT EXECUTION BEHAVIOUR
+Do not ask me to approve every small implementation decision. Choose sensible defaults and complete the MVP end to end. Do not merely output code snippets in chat—create the actual project files in the workspace. Do not leave TODOs for core features, use fake backend responses, fabricate sources, or display a made-up deployment URL. If an external deployment step is impossible from this environment, finish everything else and state the blocker plainly.

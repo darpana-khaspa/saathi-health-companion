@@ -1,0 +1,13 @@
+household_id,beneficiary_name,beneficiary_age,category,village,assigned_worker,next_visit_due,visit_status,risk_flag,concise_visit_note,last_visit_date
+HH-001,Priya Sharma,23,High-Risk Pregnancy,Rampur,ASHA Sunita,2026-10-14,pending,High,ANC 3rd visit overdue; mild anemia detected (Hb 9.8 g/dL) - verify IFA compliance,2026-09-15
+HH-002,Sunita Devi,26,Infant Immunization,Kalyanpur,ASHA Geeta,2026-10-15,pending,Medium,Pentavalent-1 and Rota-1 overdue by 3 days; mobilize mother to VHSND,2026-09-10
+HH-003,Radha Bai,19,Postnatal Care (PNC),Rampur,ASHA Sunita,2026-10-18,pending,High,Day 7 postnatal visit due today; monitor newborn cord stump and exclusive breastfeeding,2026-10-11
+HH-004,Kavitha Reddy,28,Antenatal Care (ANC),Shivpur,ANM Rekha,2026-10-18,pending,Normal,ANC 2nd visit due today; record maternal weight and blood pressure at sub-centre,2026-08-20
+HH-005,Anitha Bai,22,Newborn Care,Kalyanpur,ASHA Geeta,2026-10-20,pending,High,LBW baby (2100g); Day 14 KMC check and verify weight gain progression,2026-10-13
+HH-006,Meena Kumari,25,Child Nutrition (SAM/MAM),Ganeshpur,ASHA Sunita,2026-10-21,pending,High,MUAC measured 118mm (yellow zone); follow up home dietary counseling and Zinc,2026-10-07
+HH-007,Lakshmi Devi,31,Antenatal Care (ANC),Rampur,ASHA Sunita,2026-10-24,pending,Normal,ANC 4th visit scheduled; finalize birth preparedness plan and vehicle booking,2026-09-28
+HH-008,Pooja Patel,20,Infant Immunization,Shivpur,ANM Rekha,2026-10-26,pending,Normal,Infant 14 weeks visit; Pentavalent-3 and fIPV-2 booster due,2026-09-22
+HH-009,Rani Varma,24,Postnatal Care (PNC),Ganeshpur,ASHA Geeta,2026-10-12,completed,Normal,Day 3 postnatal visit completed; lactation established well,2026-10-12
+HH-010,Savitri Nayak,27,Antenatal Care (ANC),Kalyanpur,ASHA Geeta,2026-10-16,completed,Normal,ANC 1st trimester checkup completed; Td-1 and folic acid administered,2026-10-16
+HH-011,Deepa Mandavi,21,High-Risk Pregnancy,Shivpur,ANM Rekha,2026-10-13,pending,High,Overdue by 5 days; previous history of pre-eclampsia - check BP immediately,2026-09-12
+HH-012,Fatima Begum,29,Child Nutrition (SAM/MAM),Rampur,ASHA Sunita,2026-10-28,pending,Medium,Follow-up after NRC discharge; assess weight trajectory and hygiene,2026-10-14

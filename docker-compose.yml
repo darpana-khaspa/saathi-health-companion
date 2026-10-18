@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  saathi-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: saathi_health_companion
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+    volumes:
+      - ./data:/app/data
+      - saathi_db_data:/app
+    restart: unless-stopped
+
+volumes:
+  saathi_db_data:

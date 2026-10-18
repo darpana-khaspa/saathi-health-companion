@@ -1,0 +1,16 @@
+{
+  "short_name": "Saathi",
+  "name": "Saathi Health Companion (ASHA/ANM Assistant)",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#006d77",
+  "theme_color": "#006d77",
+  "display": "standalone",
+  "orientation": "portrait"
+}

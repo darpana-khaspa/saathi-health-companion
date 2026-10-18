@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#006d77" />
+    <meta name="description" content="Saathi Health Companion - Decision support for frontline ASHA/ANM health workers" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>Saathi Health Companion</title>
+  </head>
+  <body class="bg-gray-50 text-gray-900 antialiased selection:bg-teal-100 selection:text-teal-900">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Register Service Worker for offline app shell caching
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(err => {
+            console.log('SW registration note:', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
