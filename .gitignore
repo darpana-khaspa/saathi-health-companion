@@ -17,6 +17,15 @@ node_modules/
 # SQLite
 *.db-journal
 
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets/
+
 # OS / Editor
 .DS_Store
 Thumbs.db

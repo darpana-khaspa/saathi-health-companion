@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     
     # Data paths (checks root or data directory)
     DATA_DIR: Path = BASE_DIR / "data"
-    DB_PATH: Path = BASE_DIR / "saathi_records.db"
+    DB_PATH: Path = Path(os.getenv("DATABASE_PATH", str(BASE_DIR / "saathi_records.db")))
     
     PROTOCOL_CSV_PATH: Path = (
         DATA_DIR / "sample_protocol_knowledge_base.csv" 

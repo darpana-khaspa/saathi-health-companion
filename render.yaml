@@ -1,0 +1,28 @@
+# Render Blueprint Specification for Saathi Health Companion
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: saathi-health-companion
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: python start_app.py
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.6
+
+    # Optional: To persist household visit completions across restarts & redeploys on Render,
+    # uncomment the disk block below and set DATABASE_PATH (requires Render Starter plan or above):
+    # disk:
+    #   name: saathi-records-disk
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    #   envVars:
+    #     - key: DATABASE_PATH
+    #       value: /var/data/saathi_records.db
