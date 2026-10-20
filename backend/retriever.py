@@ -72,7 +72,7 @@ class ProtocolRetriever:
             ngram_range=(1, 2),
             sublinear_tf=True,
             stop_words="english",
-            token_pattern=r"(?u)\b[a-zA-Z0-9_\-\./]{2,}\b"
+            token_pattern=r"(?u)\b[a-zA-Z0-9]{2,}\b"
         )
         self.tfidf_matrix = self.vectorizer.fit_transform(corpus)
         self.last_indexed = datetime.now().isoformat()
@@ -99,21 +99,26 @@ class ProtocolRetriever:
         query_vec = self.vectorizer.transform([query])
         similarities = cosine_similarity(query_vec, self.tfidf_matrix).flatten()
 
-        query_tokens = set(re.findall(r"\b[a-z0-9\-]+\b", query.lower()))
-        stop_words = {
-            "what", "is", "the", "for", "and", "how", "can", "should", "give", "dose", "cycle",
-            "stage", "with", "from", "are", "you", "when", "that", "this", "have", "has", "been",
-            "patient", "patients", "drug", "drugs", "about", "care", "clinic", "case", "days"
+        query_tokens = set(re.findall(r"\b[a-z0-9]+\b", query.lower()))
+        
+        # Clinical protocol domain keywords for targeted scoring boost
+        clinical_keywords = {
+            'ors', 'rehydration', 'diarrhea', 'dehydration', 'zinc',
+            'anc', 'antenatal', 'trimester', 'gestation', 'pregnancy', 'gravida',
+            'kmc', 'kangaroo', 'hypothermia', 'lbw', 'preterm',
+            'hbnc', 'newborn', 'neonate', 'cord', 'stump',
+            'sam', 'mam', 'muac', 'malnutrition', 'wasting', 'edema',
+            'immunization', 'vaccine', 'vaccination', 'bcg', 'opv', 'pentavalent', 'rotavirus', 'fipv', 'pcv',
+            'anemia', 'ifa', 'hemoglobin', 'iron', 'folic',
+            'pnc', 'postpartum', 'lochia', 'breastfeeding', 'colostrum', 'lactation'
         }
-        filtered_tokens = {t for t in query_tokens if len(t) >= 4 and t not in stop_words}
         
         boosted_scores = np.copy(similarities)
         for idx, proto in enumerate(self.protocols):
-            # Only apply domain term boost if base TF-IDF similarity has a genuine match
-            if similarities[idx] > 0.08:
-                combined_text = f"{proto['title']} {proto['key_actions']} {proto['protocol_text']}".lower()
-                overlap = [t for t in filtered_tokens if t in combined_text]
-                boost = min(len(overlap) * 0.03, 0.15)
+            combined_text = f"{proto['title']} {proto['key_actions']} {proto['protocol_text']}".lower()
+            matched_clinical = [k for k in clinical_keywords if k in query_tokens and k in combined_text]
+            if matched_clinical and similarities[idx] > 0.05:
+                boost = min(len(matched_clinical) * 0.06, 0.20)
                 boosted_scores[idx] += boost
 
         top_indices = np.argsort(boosted_scores)[::-1][:top_k]
