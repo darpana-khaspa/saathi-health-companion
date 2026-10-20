@@ -87,6 +87,8 @@ export const App: React.FC = () => {
           stats={stats}
           protocolStatus={protocolStatus}
           onFilterDueStatus={handleCardFilterClick}
+          isPrepared={isPrepared}
+          onOpenOfflineModal={() => setIsOfflineModalOpen(true)}
         />
 
         {/* Tab 1: Protocol Q&A with Deterministic Escalation */}

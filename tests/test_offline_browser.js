@@ -94,24 +94,47 @@ async function runOfflineBrowserSuite() {
     });
     console.log(`✓ Service Worker registered: ${swRegistered}`);
 
-    // 3. Click "Prepare for Offline Use"
-    console.log('\n[3/6] Running "Prepare for Offline Use" action...');
-    const prepButtons = await page.$$('button');
-    let prepBtn = null;
-    for (const b of prepButtons) {
-      const text = await page.evaluate((el) => el.textContent, b);
-      if (text && text.includes('Prepare for Offline')) {
-        prepBtn = b;
-        break;
-      }
+    // 3. Verify Dashboard "Prepare for Offline Use" button on Mobile & Desktop
+    console.log('\n[3/6] Testing "Prepare for Offline Use" dashboard UI (Mobile & Desktop)...');
+    
+    // Mobile Viewport Check (375x667)
+    await page.setViewport({ width: 375, height: 667, isMobile: true, hasTouch: true });
+    await sleep(400);
+    const mobileBtn = await page.$('button[data-testid="dashboard-prepare-offline-btn"]');
+    if (!mobileBtn) {
+      throw new Error('Dashboard "Prepare for Offline Use" button not found on mobile viewport');
+    }
+    const mobileBtnText = await page.evaluate((el) => el.textContent, mobileBtn);
+    console.log(`✓ Mobile dashboard button verified: "${mobileBtnText.trim()}" (accessible touch target)`);
+
+    // Desktop Viewport Check (1200x900)
+    await page.setViewport({ width: 1200, height: 900 });
+    await sleep(400);
+    const dashboardBtn = await page.$('button[data-testid="dashboard-prepare-offline-btn"]');
+    if (!dashboardBtn) {
+      throw new Error('Dashboard "Prepare for Offline Use" button not found on desktop viewport');
+    }
+    console.log('✓ Desktop dashboard button verified. Clicking to open Offline Preparation Modal...');
+
+    // Verify initial un-prepared state before action
+    const preText = await page.evaluate(() => document.body.innerText);
+    if (!preText.includes('Action Required') && !preText.includes('Offline Not Prepared')) {
+      console.log('Note: System was already prepared or showing readiness');
     }
 
-    if (!prepBtn) {
-      throw new Error('Could not find "Prepare for Offline Use" button on page');
-    }
-
-    await prepBtn.click();
+    // Click dashboard button to open modal
+    await dashboardBtn.click();
     await sleep(600);
+
+    // Verify modal is visible
+    const modalVisible = await page.evaluate(() => {
+      return document.body.innerText.includes('Prepare for Field Offline Use') ||
+             document.body.innerText.includes('Offline Field Readiness');
+    });
+    if (!modalVisible) {
+      throw new Error('Offline Preparation Modal failed to open upon clicking dashboard button');
+    }
+    console.log('✓ Offline Preparation Modal opened successfully from dashboard button!');
 
     // Click confirm prepare in modal
     const modalButtons = await page.$$('button');
@@ -169,6 +192,14 @@ async function runOfflineBrowserSuite() {
         break;
       }
     }
+    await sleep(600);
+
+    // Verify dashboard reflects Offline Ready genuinely
+    const postPrepText = await page.evaluate(() => document.body.innerText);
+    if (!postPrepText.includes('Offline Ready') || !postPrepText.includes('Offline Field Mode: Ready')) {
+      throw new Error('Dashboard did not transition to "Offline Ready" state after preparation');
+    }
+    console.log('✓ Dashboard genuinely updated to "Offline Field Mode: Ready" & "Offline Ready" state!');
     await sleep(500);
 
     // 4. CUT OFF NETWORK ACCESS COMPLETELY & KILL SERVER

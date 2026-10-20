@@ -301,9 +301,21 @@ export async function prepareForOfflineUse(
   if ('caches' in window) {
     notify('Verifying App Shell cache in Service Worker...');
     try {
-      const cache = await caches.open('saathi-shell-v1');
+      const cache = await caches.open('saathi-shell-v3');
       const coreUrls = ['/', '/index.html', '/manifest.json', '/icon.svg'];
-      for (const u of coreUrls) {
+
+      // Also dynamically collect active JS & CSS asset paths
+      if (typeof document !== 'undefined') {
+        const scripts = Array.from(document.querySelectorAll('script[src]'))
+          .map((s) => s.getAttribute('src'))
+          .filter(Boolean) as string[];
+        const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"][href]'))
+          .map((l) => l.getAttribute('href'))
+          .filter(Boolean) as string[];
+        coreUrls.push(...scripts, ...styles);
+      }
+
+      for (const u of Array.from(new Set(coreUrls))) {
         try {
           await cache.add(u);
           cachedCount++;
@@ -316,28 +328,47 @@ export async function prepareForOfflineUse(
     }
   }
 
-  // 4. Save metadata
-  const db = await getOfflineDB();
+  // 4. Strict Genuine Verification Gate
+  notify('Performing genuine offline integrity checks...');
+  const verifyDb = await getOfflineDB();
+  const verifiedCounts = await new Promise<{ protocols: number; households: number }>((resolve, reject) => {
+    const tx = verifyDb.transaction(['protocols', 'households'], 'readonly');
+    const pReq = tx.objectStore('protocols').count();
+    const hReq = tx.objectStore('households').count();
+    tx.oncomplete = () => {
+      resolve({ protocols: pReq.result, households: hReq.result });
+    };
+    tx.onerror = () => reject(tx.error);
+  });
+
+  if (verifiedCounts.protocols < 10) {
+    throw new Error(`Integrity check failed: Expected >= 10 protocols in IndexedDB, found ${verifiedCounts.protocols}`);
+  }
+  if (verifiedCounts.households < 12) {
+    throw new Error(`Integrity check failed: Expected >= 12 households in IndexedDB, found ${verifiedCounts.households}`);
+  }
+
+  // 5. Save metadata only after all checks genuinely pass
   await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction('metadata', 'readwrite');
+    const tx = verifyDb.transaction('metadata', 'readwrite');
     const store = tx.objectStore('metadata');
     const meta: OfflineMetadata = {
       key: 'readiness',
       prepared: true,
       preparedAt: new Date().toISOString(),
-      protocolCount: protocolsToSave.length,
-      householdCount: householdsToSave.length,
+      protocolCount: verifiedCounts.protocols,
+      householdCount: verifiedCounts.households,
     };
     store.put(meta);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
 
-  notify('Offline preparation verified! Application is 100% ready for disconnected field use.');
+  notify(`Offline preparation verified! ${verifiedCounts.protocols} protocols & ${verifiedCounts.households} households confirmed on-device.`);
 
   return {
-    protocols: protocolsToSave.length,
-    households: householdsToSave.length,
+    protocols: verifiedCounts.protocols,
+    households: verifiedCounts.households,
     cachedAssets: cachedCount,
   };
 }

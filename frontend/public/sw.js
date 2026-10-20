@@ -1,7 +1,7 @@
 // Service Worker for Saathi Health Companion
 // Caches App Shell and core UI assets for low-connectivity offline field operation
 
-const CACHE_NAME = 'saathi-shell-v2';
+const CACHE_NAME = 'saathi-shell-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -32,14 +32,14 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Let API requests pass to local backend or handle offline fallback gracefully
+  // 1. API requests: attempt network, provide offline fallback response if unreachable
   if (event.request.url.includes('/api/')) {
     event.respondWith(
       fetch(event.request).catch(() => {
         return new Response(
           JSON.stringify({
             status: 'offline_mode',
-            answer: 'Offline notice: The browser cannot reach the Saathi backend service. Please verify that the local Saathi server is running on this device.',
+            answer: 'Offline notice: Render backend is unreachable. The application is operating in device-local offline mode.',
             citations: [],
             is_emergency: false
           }),
@@ -50,24 +50,44 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first strategy for UI static assets and navigation
+  // 2. Navigation requests (HTML page): Network-First, Cache-Fallback
+  // Ensures connected devices always receive updated HTML and service worker, while offline devices boot from cache
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseCopy = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseCopy));
+          }
+          return networkResponse;
+        })
+        .catch(async () => {
+          const cached = await caches.match('/index.html') || await caches.match('/');
+          if (cached) return cached;
+          return new Response('Offline: Saathi application shell is loading from local cache.', {
+            headers: { 'Content-Type': 'text/plain' },
+          });
+        })
+    );
+    return;
+  }
+
+  // 3. Static assets (JS, CSS, icons, fonts): Cache-First, fallback to network
   event.respondWith(
     caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
       if (cachedResponse) {
         return cachedResponse;
       }
       return fetch(event.request).then((networkResponse) => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          if (event.request.method === 'GET' && networkResponse.status === 200) {
-            cache.put(event.request, networkResponse.clone());
-          }
-          return networkResponse;
-        });
-      }).catch(() => {
-        // Fallback for navigation requests when offline
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html') || caches.match('/');
+        if (event.request.method === 'GET' && networkResponse.status === 200) {
+          const responseCopy = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseCopy));
         }
+        return networkResponse;
+      }).catch(() => {
+        // Fallback for static assets if offline
+        return new Response('', { status: 408, statusText: 'Resource unavailable offline' });
       });
     })
   );
