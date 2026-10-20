@@ -69,12 +69,23 @@ export const VisitList: React.FC<VisitListProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Synthetic Demo Data Notice */}
-      <div className="bg-teal-50/60 border border-teal-200/60 rounded-xl px-3.5 py-2 text-xs text-teal-800 flex items-center justify-between">
-        <span className="font-medium">{t.syntheticDemoNotice}</span>
-        <span className="text-[11px] text-teal-600 hidden sm:inline">
-          Offline SQLite Storage
-        </span>
+      {/* Device Storage & Multi-Device Sync Explanation Banner */}
+      <div className="bg-teal-50/80 border border-teal-200 rounded-xl p-3 text-xs text-teal-900 space-y-1">
+        <div className="flex items-center justify-between font-semibold">
+          <span className="flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5 text-teal-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 7V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-4" />
+              <rect x="2" y="10" width="12" height="12" rx="2" />
+            </svg>
+            <span>{t.syntheticDemoNotice}</span>
+          </span>
+          <span className="text-[11px] font-mono text-teal-700 bg-teal-100/80 px-2 py-0.5 rounded border border-teal-200">
+            Local IndexedDB
+          </span>
+        </div>
+        <p className="text-[11px] text-teal-800 leading-relaxed">
+          {t.deviceSyncNotice}
+        </p>
       </div>
 
       {/* Filter Toolbar */}
@@ -289,6 +300,7 @@ export const VisitList: React.FC<VisitListProps> = ({
                     ) : (
                       <button
                         type="button"
+                        data-testid={`complete-btn-${visit.household_id}`}
                         onClick={() => handleMarkComplete(visit.household_id)}
                         disabled={completingId === visit.household_id}
                         className="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 disabled:bg-slate-300 text-white font-semibold text-xs transition active:scale-95 shadow-xs flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"

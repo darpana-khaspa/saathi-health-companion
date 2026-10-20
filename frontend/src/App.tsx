@@ -7,6 +7,7 @@ import { DashboardCards } from './components/DashboardCards';
 import { AskProtocols } from './components/AskProtocols';
 import { VisitList } from './components/VisitList';
 import { DisclaimerBanner } from './components/DisclaimerModal';
+import { OfflineModal } from './components/OfflineModal';
 
 export const App: React.FC = () => {
   const [language, setLanguage] = useState<SupportedLanguage>('en');
@@ -15,6 +16,17 @@ export const App: React.FC = () => {
   const [protocolStatus, setProtocolStatus] = useState<ProtocolStatus | null>(null);
   const [isLoadingStatus, setIsLoadingStatus] = useState<boolean>(true);
   const [initialVisitFilter, setInitialVisitFilter] = useState<string>('all');
+  const [isOfflineModalOpen, setIsOfflineModalOpen] = useState<boolean>(false);
+  const [isPrepared, setIsPrepared] = useState<boolean>(false);
+
+  const checkReadiness = async () => {
+    try {
+      const prepared = await apiService.isPrepared();
+      setIsPrepared(prepared);
+    } catch {
+      setIsPrepared(false);
+    }
+  };
 
   const fetchStatusAndStats = async () => {
     setIsLoadingStatus(true);
@@ -30,6 +42,7 @@ export const App: React.FC = () => {
       if (statsRes.status === 'fulfilled') {
         setStats(statsRes.value);
       }
+      await checkReadiness();
     } catch (err) {
       console.error('Failed to fetch initial status:', err);
     } finally {
@@ -39,6 +52,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     fetchStatusAndStats();
+    checkReadiness();
   }, []);
 
   const handleCardFilterClick = (filter: string) => {
@@ -56,11 +70,13 @@ export const App: React.FC = () => {
         onTabChange={setActiveTab}
       />
 
-      {/* Status Strip: Online/Offline live detection & local protocol readiness */}
+      {/* Status Strip: Online/Offline live detection, IndexedDB readiness & Prepare action */}
       <StatusStrip
         language={language}
         protocolStatus={protocolStatus}
         isLoadingStatus={isLoadingStatus}
+        onOpenOfflineModal={() => setIsOfflineModalOpen(true)}
+        isPrepared={isPrepared}
       />
 
       {/* Main Field Workspace */}
@@ -94,6 +110,17 @@ export const App: React.FC = () => {
 
       {/* Persistent Medical Safety Disclaimer Notice */}
       <DisclaimerBanner language={language} />
+
+      {/* Prepare for Offline Use Modal */}
+      <OfflineModal
+        language={language}
+        isOpen={isOfflineModalOpen}
+        onClose={() => setIsOfflineModalOpen(false)}
+        onPrepared={() => {
+          checkReadiness();
+          fetchStatusAndStats();
+        }}
+      />
     </div>
   );
 };

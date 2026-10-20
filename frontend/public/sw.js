@@ -1,14 +1,14 @@
 // Service Worker for Saathi Health Companion
 // Caches App Shell and core UI assets for low-connectivity offline field operation
 
-const CACHE_NAME = 'saathi-shell-v1';
+const CACHE_NAME = 'saathi-shell-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
   '/icon.svg',
   '/assets/index-Cy_OgKu1.css',
-  '/assets/index-vzAys_qc.js'
+  '/assets/index-CXyiPcNp.js'
 ];
 
 self.addEventListener('install', (event) => {

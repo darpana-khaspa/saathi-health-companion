@@ -89,6 +89,11 @@ def get_protocols_status():
         retrieval_engine="Local Offline Scikit-Learn TF-IDF Indexer"
     )
 
+@app.get("/api/protocols/export", tags=["Protocols"])
+def export_protocols():
+    """Exports loaded protocol documents for browser-side offline storage and indexing."""
+    return protocol_retriever.protocols
+
 @app.post("/api/ask", response_model=AskResponse, tags=["Protocol Q&A"])
 def ask_protocol(payload: AskRequest):
     """
